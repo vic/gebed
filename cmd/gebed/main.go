@@ -85,7 +85,9 @@ func main() {
 	log.Printf("gebed on http://%s", *addr)
 	srv := server.New(reg, store.Exec, themes, net, u.Username)
 	srv.Warm()
-	log.Fatal(http.ListenAndServe(*addr, srv))
+	// Guard refuses cross-site writes and DNS-rebinding hosts, so a web page
+	// the user visits cannot drive the loopback API.
+	log.Fatal(http.ListenAndServe(*addr, server.Guard(*addr, srv)))
 }
 
 // installSkill implements `gebed skill install [-to DIR]`.
